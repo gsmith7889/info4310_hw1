@@ -6,84 +6,55 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/topojson.v3.min.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="../static/styles/site.css" />
+
     <style>
-        .gridlines .domain {
-            display: none;
+        .gridlines line {
+            stroke: #bbb;
         }
 
-        .gridlines line {
-            stroke: #444;
+        .gridlines .domain {
+            stroke: none;
         }
     </style>
 </head>
 
 <body>
-    <h3>Gabriella Smith (gls245)</h3>
+    <div class="v-title">
+        <h2>Trees Planted in San Francisco: 1988 to 2021</h2>
+    </div>
 
-    <svg id="choropleth" height="770" width="990" style="margin:20px"></svg>
-    <svg id="line-graph" height="500" width="1000"></svg>
+    <div class="legend1">
+        <div class="past circle"></div>
+        <div class="year">2019</div>
+        <div class="post circle"></div>
+        <div class="year">2022</div>
+    </div>
 
-    <ul id="threshold"></ul>
+    <div class="flex">
+        <svg id="line-graph" height="500" width="1000"></svg>
+    </div>
 
     <script>
-        const svg = d3.select("#choropleth");
+        const svg = d3.select("#line-graph");
         const width = svg.attr("width");
         const height = svg.attr("height");
-        const margin = { top: 20, right: 20, bottom: 20, left: 20 };
-        const mapWidth = width - margin.left - margin.right;
-        const mapHeight = height - margin.top - margin.bottom;
-        const map = svg.append("g")
+        const margin = { top: 20, right: 20, bottom: 70, left: 100 };
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+
+        let annotations = svg.append("g").attr("id", "annotations");
+        const chartArea = svg.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        const svg2 = d3.select("#line-graph");
-        const width2 = svg2.attr("width");
-        const height2 = svg2.attr("height");
-        const chartWidth = width2 - margin.left - margin.right;
-        const chartHeight = height2 - margin.top - margin.bottom;
-
-        let annotations = svg2.append("g").attr("id", "annotations");
-        const chartArea = svg2.append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
         const requestData = async function () {
-            const sftrees = await d3.json("../static/SF-Neighborhoods.geo.json");
-
-            const neighborhoods = topojson.feature(sftrees, sftrees.objects.SFNeighborhoods);
-            const neighborhoodsMesh = topojson.mesh(sftrees, sftrees.objects.SFNeighborhoods);
-            // const stateMesh = topojson.mesh(nyincome, nyincome.objects.state);
-            let projection = d3.geoMercator().fitSize([mapWidth, mapHeight], neighborhoods);
-            let path = d3.geoPath().projection(projection);
-
-            map.selectAll("path.neighborhood").data(neighborhoods.features)
-                .join("path")
-                .attr("class", "neighborhood")
-                .attr("d", path);
-
             const trees = await d3.csv("../static/Street_Tree_List-2022-01-30_FILTERED.csv");
-            // incomes = d3.map(nyincome.objects.zip_codes.geometries, d => d.properties.median_income);
-            // console.log(incomes);
-
-            // d3.csv("Street_Tree_List-2022-01-30_FILTERED.csv").then((trees) => {
-
-            trees.forEach(d => {
-                d.Position = projection([d.Longitude, d.Latitude]);
-
-            });
-
-            map.selectAll("circle").data(trees)
-                .join("circle")
-                .attr("r", 1)
-                .attr("fill", "forestgreen")
-                .attr("opacity", 0.4)
-                .attr("cx", d => d.Position[0])
-                .attr("cy", d => d.Position[1]);
 
             dict = {};
             private = {};
             public = {};
             trees.forEach(d => {
-                if (Number(d['year']) > 1956) {
+                if (Number(d['year']) >= 1988 && Number(d['year']) <= 2021) {
                     if (d['year'] in dict) {
                         dict[d['year']] += 1;
                     }
@@ -105,130 +76,95 @@
                         else {
                             private[d['year']] = 1;
                         }
-
-                        // if (d['qCaretaker'] in private) {
-                        //     private[d['qCaretaker']] += 1;
-                        // }
-                        // else {
-                        //     private[d['qCaretaker']] = 1;
-                        // }
                     }
-
                 }
-
             });
 
-            console.log(dict)
-            years = Object.keys(dict)
-            console.log(private);
-            console.log(public);
+            var years = Object.keys(dict)
 
-            const dateExtent = d3.extent(years);
-            const dateScale = d3.scaleTime().domain(dateExtent).range([0, chartWidth]);
-            let bottomAxis = d3.axisBottom(dateScale)
-            let bottomGridlines = d3.axisBottom(dateScale)
+            const yearExtent = d3.extent(years);
+            const yearScale = d3.scaleTime().domain(yearExtent).range([0, chartWidth - 20]);
+            let bottomAxis = d3.axisBottom(yearScale).tickFormat(Math.abs).ticks(15);
+            let bottomGridlines = d3.axisBottom(yearScale).ticks(15)
                 .tickSize(-chartHeight - 10)
                 .tickFormat("")
             annotations.append("g")
-                .attr("class", "x axis")
-                .attr("transform", `translate(${margin.left + 20},${chartHeight + margin.top})`)
+                .style("font-size", 12)
+                .attr("class", "x-axis")
+                .attr("transform", `translate(${margin.left},${chartHeight + margin.top})`)
                 .call(bottomAxis);
             annotations.append("g")
-                .attr("class", "x gridlines")
-                .attr("transform", `translate(${margin.left + 20},${chartHeight + margin.top})`)
+                .attr("class", "gridlines")
+                .attr("transform", `translate(${margin.left},${chartHeight + margin.top})`)
                 .call(bottomGridlines);
+            annotations.append("text")
+                .attr("transform", `translate(${(chartWidth + margin.left) / 2},${chartHeight + margin.bottom})`)
+                .text("Year")
+                .style("fill", "rgb(80, 80, 80)");
 
-            // const countExtent = d3.extent(trees, d => d['year']);
-            const countScale = d3.scaleLinear().domain([0, 550]).range([chartHeight, 0]);
+            const countScale = d3.scaleLinear().domain([-20, 525]).range([chartHeight, 0]);
             let leftAxis = d3.axisLeft(countScale)
             let leftGridlines = d3.axisLeft(countScale)
                 .tickSize(-chartWidth - 10)
                 .tickFormat("")
             annotations.append("g")
-                .attr("class", "y axis")
-                .attr("transform", `translate(${margin.left + 20},${margin.top})`)
+                .style("font-size", 12)
+                .attr("class", "y-axis")
+                .attr("transform", `translate(${margin.left - 20}, ${margin.top})`)
                 .call(leftAxis)
             annotations.append("g")
-                .attr("class", "y gridlines")
-                .attr("transform", `translate(${margin.left + 20},${margin.top})`)
+                .attr("class", "gridlines")
+                .attr("transform", `translate(${margin.left - 20}, ${margin.top})`)
                 .call(leftGridlines);
+            annotations.append("text")
+                .style("text-anchor", "end")
+                .attr('transform', `rotate(-90)`)
+                .attr("dx", "-175")
+                .attr("dy", "30")
+                .text("# of Trees Planted")
+                .style("fill", "rgb(80, 80, 80)");
 
-            // annotations.append("path")
-            //     .datum(trees)
-            //     .attr("class", "line")
-            //     .attr("d", line);
-            // var lineGen = d3.line()
-            //     .x(d => dateScale(d['year']))
-            //     .y(d => countScale(dict[d['year']]))
-            // this configures whether straight lines connect your data points
-            // //  or if it blends between points using a curve; see d3.line docs
-
-            // // 4. Append a <path>, bind the data, and run the generator 
-            // //  The generator is "run" in the last command.
-            // chartArea.append("path")
-            //     .datum(trees)
-            //     .attr("class", "line")
-            //     .attr("fill", "none")   // using attr here, style would work too
-            //     .attr("stroke", "steelblue")
-            //     .attr("stroke-width", 3)
-            //     .attr("d", lineGen);
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
             var lineGen = d3.line()
-                .x(d => dateScale(d[0]))
+                .x(d => yearScale(d[0]))
                 .y(d => countScale(d[1]));
 
-            gTags2 = chartArea.selectAll('g.tags').data(Object.entries(private))
+            gTags1 = chartArea.selectAll('g.tags').data(Object.entries(private))
                 .join('g')
                 .attr('class', 'tag')
-                .style('stroke', "red");
+                .style('stroke', colorScale(private));
 
-            gTags2.append('path')
+            gTags1.append('path')
                 .attr('d', lineGen(Object.entries(private)))
                 .style('stroke-width', 2)
                 .style('fill', 'none');
 
-            gTags2.selectAll("circle").data(Object.entries(private))
+            gTags1.selectAll("circle").data(Object.entries(private))
                 .join("circle")
                 .attr("r", 3)
-                .attr("fill", "red")   // using attr here, style would work too
-                .attr("cx", d => dateScale(d[0]))
+                .attr("fill", colorScale(private))
+                .attr("cx", d => yearScale(d[0]))
                 .attr("cy", d => countScale(d[1]));
 
-            gTags3 = chartArea.selectAll('g.tags').data(Object.entries(public))
+            gTags2 = chartArea.selectAll('g.tags').data(Object.entries(public))
                 .join('g')
                 .attr('class', 'tag')
-                .style('stroke', "green");
+                .style('stroke', colorScale(public));
 
-            gTags3.append('path')
+            gTags2.append('path')
                 .attr('d', lineGen(Object.entries(public)))
                 .style('stroke-width', 2)
                 .style('fill', 'none');
 
-            gTags3.selectAll("circle").data(Object.entries(public))
+            gTags2.selectAll("circle").data(Object.entries(public))
                 .join("circle")
                 .attr("r", 3)
-                .attr("fill", "green")   // using attr here, style would work too
-                .attr("cx", d => dateScale(d[0]))
+                .attr("fill", colorScale(public))
+                .attr("cx", d => yearScale(d[0]))
                 .attr("cy", d => countScale(d[1]));
 
-            speciesCounts = {};
-            trees.forEach(d => {
-                species = d['qSpecies']
-                if (species in speciesCounts) {
-                    speciesCounts[species] += 1;
-                }
-                else {
-                    speciesCounts[species] = 1;
-                }
-            });
-            console.log(speciesCounts)
-
         }
-        // };
-
-
-
-
         requestData();
     </script>
 
