@@ -21,19 +21,42 @@
 
 <body>
     <div class="v-title">
-        <h2>Trees Planted in San Francisco: 1988 to 2021</h2>
+        <h2>Ownership of Trees Planted in San Francisco: 1988 to 2021</h2>
     </div>
 
-    <div class="legend1">
-        <div class="past circle"></div>
-        <div class="year">2019</div>
-        <div class="post circle"></div>
-        <div class="year">2022</div>
+    <div class="legend">
+        <div class="private circle"></div>
+        <div class="care">Private</div>
+        <div class="public circle"></div>
+        <div class="care">Public</div>
     </div>
 
     <div class="flex">
         <svg id="line-graph" height="500" width="1000"></svg>
     </div>
+
+    <p>
+        The graph above displays the number of trees planted per year in terms of their caretaker, or owner (public
+        entity or private).
+        Not every tree planted during these years is represented due to incomplete data. However, the
+        distribution of the data points remains consistent with expectations, given the factors influencing
+        the rate at which trees were planted each year. <br><br>
+
+        Most notably, trees are consistently planted under the care of private entities at a higher rate than
+        public ones, except for a spike in public plantings from 2005 to 2008. Interestingly, this coincides
+        with then-Mayor Gavin Newsom&#39;s Trees for Tomorrow campaign, which brought 25,000 new trees to the city.
+        A <a href="https://sfenvironment.org/sites/default/files/fliers/files/sfe_uf_2008_annual_uf_report.pdf">
+            2008 annual report</a> by the San Francisco Urban Forestry Council shows that his goal of planting 5,000
+        trees from 2007 to 2008 was exceeded for that timeframe in particular. <br><br>
+
+        Unfortunately, the city faced a major budget deficit in 2011. To cut costs, Newsom's successor transferred
+        the care of several thousand trees to private owners from 2012 onwards. This spike and subsequent drop
+        in public ownership and planting of trees is relfected in the graph. <br><br>
+
+        <em>
+            <a href="https://www.sfpublicpress.org/proposition-e-returning-tree-maintenance-to-city-hall/">(Source)</a>
+        </em>
+    </p>
 
     <script>
         const svg = d3.select("#line-graph");
@@ -53,6 +76,7 @@
             dict = {};
             private = {};
             public = {};
+            caretakers = {};
             trees.forEach(d => {
                 if (Number(d['year']) >= 1988 && Number(d['year']) <= 2021) {
                     if (d['year'] in dict) {
@@ -64,9 +88,11 @@
                     if (d['qCaretaker'] !== "Private") {
                         if (d['year'] in public) {
                             public[d['year']] += 1;
+                            caretakers[d['qCaretaker']] = 1;
                         }
                         else {
                             public[d['year']] = 1;
+                            caretakers[d['qCaretaker']] = 1;
                         }
                     }
                     else {
@@ -80,7 +106,7 @@
                 }
             });
 
-            var years = Object.keys(dict)
+            var years = Object.keys(dict);
 
             const yearExtent = d3.extent(years);
             const yearScale = d3.scaleTime().domain(yearExtent).range([0, chartWidth - 20]);
@@ -124,7 +150,7 @@
                 .text("# of Trees Planted")
                 .style("fill", "rgb(80, 80, 80)");
 
-            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+            const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
 
             var lineGen = d3.line()
                 .x(d => yearScale(d[0]))

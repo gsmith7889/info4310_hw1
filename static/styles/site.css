@@ -9,78 +9,42 @@ body {
     stroke-width: 2;
 }
 
-h1,
-h2,
-h3 {
+h2 {
+    color: rgb(134, 134, 134);
     font-weight: 100;
 }
 
-
-h2 {
-    color: rgb(134, 134, 134);
-}
-
-.v-title,
-.title {
-    width: auto;
-    display: flex;
-    justify-content: center;
-}
-
-.title {
-    width: auto;
-    background-color: #FF5A60;
-}
-
-h1,
-h3 {
-    color: white;
-}
-
-h1 {
-    padding-top: 50px;
-    text-align: center;
-}
-
-h3 {
-    padding-bottom: 50px;
+a {
+    color: #4E79A7;
 }
 
 .v-title {
+    width: auto;
+    display: flex;
+    justify-content: center;
     margin-top: 70px;
     margin-bottom: 20px;
 }
 
-.past,
-.post {
+.private,
+.public {
     width: 12px;
     height: 12px;
     align-self: center;
 }
 
-.past {
-    background-color: #83C5FF;
+.private {
+    background-color: #4E79A7;
 }
 
-.post {
-    background-color: #FF8387;
+.public {
+    background-color: #F28E2C;
 }
 
-.year {
+.care {
     margin-left: 15px;
     font-size: 14px;
     color: rgb(80, 80, 80);
-}
-
-.row {
-    margin-bottom: 10px;
-}
-
-.legend2 {
-    width: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
 }
 
 .flex {
@@ -92,11 +56,11 @@ h3 {
     border-radius: 50%;
 }
 
-.legend1 .year {
+.legend .care {
     padding-right: 20px;
 }
 
-.legend1 {
+.legend {
     display: flex;
     justify-content: center;
 }
